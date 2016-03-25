@@ -12,7 +12,7 @@ var config = {
   txPower: 'PA_MAX'
 }
 
-console.log(new Date() + ": Starting with configuration:\n", config)
+console.log("Starting with configuration:\n", config)
 
 
 var radio = nrf.connect(config.spiDevice, config.cePin, config.irqPin)
@@ -42,7 +42,7 @@ function dataReceived(buffer) {
       return
   }
 
-  console.log(new Date() + ":", JSON.stringify(data))
+  console.log(JSON.stringify(data))
 }
 
 
