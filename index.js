@@ -2,7 +2,7 @@ var nrf = require('nrf')
 var reverse = require('reverse-string')
 
 var config = {
-  spiDevice: "/dev/spidev0.0",
+  spiDevice: "/dev/spidev0.1",
   cePin: 25,                     // GPIO_25
   irqPin: 24,                    // GPIO_24
   channel: 76,                   // 76 is the default channel for RF24 Arduino library
