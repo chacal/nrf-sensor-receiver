@@ -6,7 +6,11 @@
   "author": "Jouni Hartikainen",
   "license": "Apache 2.0",
   "dependencies": {
+    "baconjs": "^0.7.84",
+    "express": "^4.13.4",
     "nrf": "^0.8.3",
-    "reverse-string": "0.0.4"
+    "primus": "^5.1.0",
+    "reverse-string": "0.0.4",
+    "ws": "^1.1.0"
   }
 }
