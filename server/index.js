@@ -4,7 +4,7 @@ var http = require('http')
 var sensorStream = require('./nrf-receiver.js')
 
 var app = express()
-app.use(express.static(__dirname + '/public'))
+app.use(express.static(__dirname + '/../public'))
 var server = http.createServer(app)
 var primus = new Primus(server)
 

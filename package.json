@@ -2,7 +2,7 @@
   "name": "nrf-sensor-receiver",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server/index.js",
   "author": "Jouni Hartikainen",
   "license": "Apache 2.0",
   "dependencies": {
