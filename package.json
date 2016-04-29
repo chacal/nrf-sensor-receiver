@@ -5,13 +5,18 @@
   "main": "server/index.js",
   "author": "Jouni Hartikainen",
   "license": "Apache 2.0",
+  "postinstall": "node_modules/.bin/webpack",
   "dependencies": {
+    "babel-core": "^6.7.7",
+    "babel-loader": "^6.2.4",
     "baconjs": "^0.7.84",
     "express": "^4.13.4",
+    "jquery": "^2.2.3",
     "lodash": "^4.11.1",
     "nrf": "^0.8.3",
     "primus": "^5.1.0",
     "reverse-string": "0.0.4",
+    "webpack": "^1.13.0",
     "ws": "^1.1.0"
   }
 }
