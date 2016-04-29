@@ -1,7 +1,7 @@
 var Primus = require('primus')
 var express = require('express')
 var http = require('http')
-var sensorStream = require('./nrf-receiver.js')
+var sensorStream = process.platform === 'linux' ? require('./nrf-receiver.js') : require('./sensor-simulator.js')
 
 var app = express()
 app.use(express.static(__dirname + '/../public'))

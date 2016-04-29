@@ -8,6 +8,7 @@
   "dependencies": {
     "baconjs": "^0.7.84",
     "express": "^4.13.4",
+    "lodash": "^4.11.1",
     "nrf": "^0.8.3",
     "primus": "^5.1.0",
     "reverse-string": "0.0.4",
