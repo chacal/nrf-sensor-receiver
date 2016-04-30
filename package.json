@@ -16,6 +16,7 @@
     "express": "^4.13.4",
     "jquery": "^2.2.3",
     "lodash": "^4.11.1",
+    "moment": "^2.13.0",
     "nrf": "^0.8.3",
     "primus": "^5.1.0",
     "reverse-string": "0.0.4",
