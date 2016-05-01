@@ -38,6 +38,9 @@ function dataReceived(buffer) {
     case 't':
       fillTemperatureData(buffer, data)
       break;
+    case 'p':
+      fillPressureData(buffer, data)
+      break;
     default:
       console.error("Received unknown data!", buffer)
       return
@@ -53,6 +56,11 @@ function parseTagAndInstance(buffer) {
 
 function fillTemperatureData(buffer, data) {
   data.temperature = buffer.readFloatLE(2)
+  data.vcc = buffer.readInt16LE(6)
+}
+
+function fillPressureData(buffer, data) {
+  data.pressure = buffer.readFloatLE(2)
   data.vcc = buffer.readInt16LE(6)
 }
 
