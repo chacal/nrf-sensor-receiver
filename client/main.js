@@ -5,21 +5,27 @@ var moment = require('moment')
 
 const temperatures = Bacon.fromEvent(primus, 'data').filter(data => data.tag === 't')
 
-temperatures
-  .groupBy(temperature => temperature.instance)
-  .flatMap(streamByInstance => {
-    var rowCreator = streamByInstance.first().doAction(temperature => $('#temperatures').append(rowTemplate(temperature)))
-    return rowCreator.concat(streamByInstance)
-  })
-  .onValue(temperature => {
-    var $row = $(`tr.temperature${temperature.instance}`)
-    $row.find('td.temperature').html(temperature.temperature.toFixed(2) + '&deg;C')
-    $row.find('td.vcc').html((temperature.vcc / 1000).toFixed(3) + 'V')
-    $row.find('td.time').html(moment().format('HH:mm:ss'))
-  })
+bindRenderer(temperatures, $('#temperatures'), temperatureRowTemplate, renderTemperature)
 
 
-function rowTemplate(temperature) {
+function bindRenderer(sensorStream, $displayTable, rowTemplateCreator, renderer) {
+  sensorStream
+    .groupBy(value => value.instance)
+    .flatMap(streamByInstance => {
+      var rowCreator = streamByInstance.first().doAction(value => $displayTable.append(rowTemplateCreator(value)))
+      return rowCreator.concat(streamByInstance)
+    })
+    .onValue(renderer)
+}
+
+function renderTemperature(temperature) {
+  var $row = $(`tr.temperature${temperature.instance}`)
+  $row.find('td.temperature').html(temperature.temperature.toFixed(2) + '&deg;C')
+  $row.find('td.vcc').html((temperature.vcc / 1000).toFixed(3) + 'V')
+  $row.find('td.time').html(moment().format('HH:mm:ss'))
+}
+
+function temperatureRowTemplate(temperature) {
   return `<tr class="temperature${temperature.instance}">
             <td>Sensor ${temperature.instance}</td>
             <td class="temperature"></td>
