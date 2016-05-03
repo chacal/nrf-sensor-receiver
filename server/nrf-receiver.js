@@ -58,11 +58,13 @@ function parseTagAndInstance(buffer) {
 function fillTemperatureData(buffer, data) {
   data.temperature = buffer.readFloatLE(2)
   data.vcc = buffer.readInt16LE(6)
+  data.previousSampleTimeMicros = buffer.readUInt32LE(8)
 }
 
 function fillPressureData(buffer, data) {
   data.pressure = buffer.readFloatLE(2)
   data.vcc = buffer.readInt16LE(6)
+  data.previousSampleTimeMicros = buffer.readUInt32LE(8)
 }
 
 module.exports = sensorStream
