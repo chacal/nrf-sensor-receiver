@@ -2,6 +2,7 @@ var Primus = require('primus')
 var express = require('express')
 var http = require('http')
 var sensorStream = process.platform === 'linux' ? require('./nrf-receiver.js') : require('./sensor-simulator.js')
+var logToConsole = process.env.LOG_TO_CONSOLE
 
 var app = express()
 app.use(express.static(__dirname + '/../public'))
@@ -16,7 +17,9 @@ server.listen(8080, () => {
 
 function start() {
   sensorStream.onValue(value => {
-    console.log(JSON.stringify(value))
+    if(logToConsole) {
+      console.log(JSON.stringify(value))
+    }
     primus.write(value)
   })
 }
