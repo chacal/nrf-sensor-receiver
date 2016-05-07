@@ -3,7 +3,7 @@ var reverse = require('reverse-string')
 var Bacon = require('baconjs')
 
 var config = {
-  spiDevice: "/dev/spidev0.1",
+  spiDevice: process.env.NRF24_SPI_DEVICE ? process.env.NRF24_SPI_DEVICE : "/dev/spidev0.1",
   cePin: 25,                     // GPIO_25
   irqPin: 24,                    // GPIO_24
   channel: 76,                   // 76 is the default channel for RF24 Arduino library
