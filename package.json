@@ -22,5 +22,8 @@
     "reverse-string": "0.0.4",
     "webpack": "^1.13.0",
     "ws": "^1.1.0"
+  },
+  "optionalDependencies": {
+    "socketcan": "^2.1.2"
   }
 }
