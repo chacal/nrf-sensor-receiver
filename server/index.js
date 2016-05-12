@@ -3,7 +3,7 @@ var express = require('express')
 var http = require('http')
 var sensorStream = process.platform === 'linux' ? require('./nrf-receiver.js') : require('./sensor-simulator.js')
 var logToConsole = process.env.LOG_TO_CONSOLE
-var autopilot = require('./autopilot-controller.js')
+var autopilot = process.platform === 'linux' ? require('./autopilot-controller.js') : require('./autopilot-simulator')
 var util = require('./util.js')
 
 var app = express()
