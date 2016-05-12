@@ -13,6 +13,28 @@ function turnOff() {
   frames.forEach(frame => can.send(233688064, new Buffer(frame, 'hex')))
 }
 
+function setCourse(courseRads) {
+  var intRadians = Math.round(courseRads * 10000)
+
+  var lowerByte = intRadians & 0xff  // mask away upper bits
+  var secondFrame = new Buffer('21013b0703040600')
+  secondFrame[7] = lowerByte
+
+  var upperByte = intRadians >> 8  // shift away lower bits
+  var thirdFrame = new Buffer('2200ffffffffffff')
+  thirdFrame[1] = upperByte
+
+  var frames = [new Buffer('200e0150ff00f803', 'hex'), secondFrame, thirdFrame]
+  frames.forEach(frame => can.send(233688064, frame))
+}
+
+function adjustCourse(adjustmentRads) {
+  status.first().filter('.autopilotEnabled').map('.course').onValue(currentCourse => {
+    var newCourse = currentCourse + adjustmentRads
+    setCourse(newCourse)
+  })
+}
+
 var state = Bacon.interval(300, false)
   .merge(can.rxFrames.map(true))
   .slidingWindow(2)
@@ -39,5 +61,7 @@ function parseTrackedCourse(pgn65360Buffer) {
 module.exports = {
   turnOn,
   turnOff,
+  setCourse,
+  adjustCourse,
   status
 }
