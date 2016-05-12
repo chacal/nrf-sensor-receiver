@@ -17,7 +17,7 @@ function adjustCourse(adjustmentRads) {
 
 module.exports = {
   turnOn: () => { state.push(true); course.push(_.random(0, util.degToRads(360), true)) },
-  turnOff: () => state.push(false),
+  turnOff: () => { state.push(false); course.push(undefined) },
   setCourse: course => course.push(course),
   adjustCourse,
   status
