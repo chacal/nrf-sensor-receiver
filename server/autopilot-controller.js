@@ -17,11 +17,11 @@ function setCourse(courseRads) {
   var intRadians = Math.round(courseRads * 10000)
 
   var lowerByte = intRadians & 0xff  // mask away upper bits
-  var secondFrame = new Buffer('21013b0703040600')
+  var secondFrame = new Buffer('21013b0703040600', 'hex')
   secondFrame[7] = lowerByte
 
   var upperByte = intRadians >> 8  // shift away lower bits
-  var thirdFrame = new Buffer('2200ffffffffffff')
+  var thirdFrame = new Buffer('2200ffffffffffff', 'hex')
   thirdFrame[1] = upperByte
 
   var frames = [new Buffer('200e0150ff00f803', 'hex'), secondFrame, thirdFrame]

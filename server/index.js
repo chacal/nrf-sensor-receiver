@@ -4,9 +4,11 @@ var http = require('http')
 var sensorStream = process.platform === 'linux' ? require('./nrf-receiver.js') : require('./sensor-simulator.js')
 var logToConsole = process.env.LOG_TO_CONSOLE
 var autopilot = require('./autopilot-controller.js')
+var util = require('./util.js')
 
 var app = express()
 app.use(express.static(__dirname + '/../public'))
+app.use(require('body-parser').json())
 var server = http.createServer(app)
 var primus = new Primus(server)
 
@@ -26,6 +28,17 @@ app.post('/autopilot/state/:state', (req, res) => {
     res.status(400).json({error: 'Expected state on/off'})
   }
 })
+
+app.post('/autopilot/adjust-course', (req, res) => {
+  var adjustment = Number.parseFloat(req.body.adjustment)
+  if(adjustment >= util.degToRads(-20) && adjustment <= util.degToRads(20)) {
+    autopilot.adjustCourse(adjustment)
+    res.status(204).end()
+  } else {
+    res.status(400).json({error: `Invalid course adjustment: ${adjustment} Expecting ±20 degrees in radians.`})
+  }
+})
+
 
 function start() {
   sensorStream.onValue(value => {
