@@ -22,7 +22,6 @@ var state = Bacon.interval(300, false)
 var trackedCourse = can.rxFrames
   .map('.data')
   .map(parseTrackedCourse)
-  .map(util.radsToDeg)
   .skipDuplicates()
   .toProperty(undefined)
 
