@@ -16,6 +16,7 @@ var state = Bacon.interval(300, false)
   .merge(can.rxFrames.map(true))
   .slidingWindow(2)
   .map(values => ! _.every(values, value => value === false))
+  .skipDuplicates()
 
 
 module.exports = {
