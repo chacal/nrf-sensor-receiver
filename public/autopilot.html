@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Autopilot page</title>
+</head>
+<body>
+<table>
+  <tr>
+    <td><button id="standby" href="">Standby</button></td>
+    <td id="course" colspan="2"></td>
+    <td><button id="auto">Auto</button></td>
+  </tr>
+  <tr id="adjustments">
+    <td><button data-adjustment="-10">-10°</button></td>
+    <td><button data-adjustment="-1">-1°</button></td>
+    <td><button data-adjustment="1">+1°</button></td>
+    <td><button data-adjustment="10">+10°</button></td>
+  </tr>
+</table>
+<script src="primus/primus.js"></script>
+<script src="autopilot.bundle.js"></script>
+</body>
+</html>

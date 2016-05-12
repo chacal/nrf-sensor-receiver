@@ -1,6 +1,7 @@
 module.exports = {
   entry: {
-    sensors: './client/sensors.js'
+    sensors: './client/sensors.js',
+    autopilot: './client/autopilot.js'
   },
   output: {
     path: __dirname + '/public',
