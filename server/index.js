@@ -41,6 +41,11 @@ app.post('/autopilot/adjust-course', (req, res) => {
 
 
 function start() {
+  primus.on('connection', spark => {
+    autopilot.status.first().onValue(status => spark.write(status))
+  })
+  autopilot.status.onValue(status => primus.write(status))
+
   sensorStream.onValue(value => {
     if(logToConsole) {
       console.log(JSON.stringify(value))
