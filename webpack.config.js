@@ -1,8 +1,10 @@
 module.exports = {
-  entry: './client/main.js',
+  entry: {
+    sensors: './client/sensors.js'
+  },
   output: {
     path: __dirname + '/public',
-    filename: 'bundle.js'
+    filename: "[name].bundle.js"
   },
   module: {
     loaders: [

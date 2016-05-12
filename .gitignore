@@ -34,4 +34,4 @@ node_modules
 
 .idea/
 
-public/bundle.js
+public/*.bundle.js
