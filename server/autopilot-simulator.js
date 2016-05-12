@@ -8,7 +8,7 @@ var course = new Bacon.Bus()
 var status = Bacon.combineWith(state.toProperty(false), course.toProperty(undefined), (autopilotEnabled, course) => ({
   autopilotEnabled,
   course: autopilotEnabled ? course : undefined
-})).filter(s => !(s.autopilotEnabled && !s.course))
+})).filter(s => !(s.autopilotEnabled && !s.course)).skipDuplicates(_.isEqual)
 
 function adjustCourse(adjustmentRads) {
   status.first().filter('.autopilotEnabled').map('.course').onValue(currentCourse => course.push(currentCourse + adjustmentRads))
