@@ -34,4 +34,5 @@ function start() {
     }
     primus.write(value)
   })
+  autopilot.status.log()
 }
