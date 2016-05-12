@@ -1,4 +1,4 @@
-var can = require('./can-tranceiver.js')('can0', { id: 0xff4f00, mask: 0xffff00 })
+var can = require('./can-tranceiver.js')('can0', { id: 0xff5000, mask: 0xffff00 })
 var Bacon = require('baconjs')
 var _ = require('lodash')
 
