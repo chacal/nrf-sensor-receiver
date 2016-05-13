@@ -13,6 +13,7 @@ var autopilotEvents = Bacon.fromEvent(primus, 'data').filter(data => _.has(data,
 
 autopilotEvents.onValue(status => {
   $('#standby').prop('disabled', !status.autopilotEnabled)
+  $('#adjustments button').prop('disabled', !status.autopilotEnabled)
   $('#auto').prop('disabled', status.autopilotEnabled)
   $('#course').empty().html(status.course ? Math.round(util.radsToDeg(status.course)) + '°' : '')
 })
