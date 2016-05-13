@@ -1,3 +1,5 @@
+var CommonsChunkPlugin = new require("webpack/lib/optimize/CommonsChunkPlugin")
+
 module.exports = {
   entry: {
     sensors: './client/sensors.js',
@@ -25,5 +27,8 @@ module.exports = {
       {test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=image/svg+xml'}
     ]
   },
+  plugins: [
+    new CommonsChunkPlugin("commons.chunk.js")
+  ],
   externals: [ 'Primus' ]
 }
