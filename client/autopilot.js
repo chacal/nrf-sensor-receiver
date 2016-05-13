@@ -1,9 +1,11 @@
 var primus = require('Primus').connect()
 var $ = require('jquery')
+require('expose?$!expose?jQuery!jquery')
 var Bacon = require('baconjs')
 var _ = require('lodash')
 var util = require('../server/util.js')
-
+require("bootstrap-webpack")
+require('./less/autopilot.less')
 
 
 var autopilotEvents = Bacon.fromEvent(primus, 'data').filter(data => _.has(data, 'autopilotEnabled'))
