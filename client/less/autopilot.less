@@ -1,10 +1,14 @@
 @cellMargin: 10px;
-@cellHeight: 60px;
+@cellHeight: 50px;
 
 div.main-content {
-  margin: 0 5px;
+  margin: 20px 5px;
 
-  button { width: 100%; height: @cellHeight; margin: @cellMargin 0; font-size: 20px; }
-  #course { height: @cellHeight; line-height: @cellHeight; margin: @cellMargin 0; font-size: 40px; }
+  button { width: 100%; height: @cellHeight; margin: @cellMargin 0; font-size: 18px; padding-left: 0; padding-right: 0; }
+  #course {
+    height: @cellHeight; line-height: @cellHeight; margin: @cellMargin 0; font-size: 60px;
+    &:not(:empty)::after { content: "°"; position: absolute; }
+    &:empty::after { content: "-"; }
+  }
 }
 
