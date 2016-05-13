@@ -35,3 +35,8 @@ node_modules
 .idea/
 
 public/*.bundle.js
+public/*.woff
+public/*.woff2
+public/*.svg
+public/*.ttf
+public/*.eot
