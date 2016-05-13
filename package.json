@@ -6,7 +6,7 @@
   "author": "Jouni Hartikainen",
   "license": "Apache 2.0",
   "scripts": {
-    "postinstall": "node_modules/.bin/webpack"
+    "postinstall": "node_modules/.bin/webpack -p"
   },
   "dependencies": {
     "babel-core": "^6.7.7",
