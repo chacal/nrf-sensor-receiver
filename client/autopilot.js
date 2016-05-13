@@ -7,6 +7,7 @@ var util = require('../server/util.js')
 require("bootstrap-webpack")
 require('./less/autopilot.less')
 
+$('body').show(0)
 
 var autopilotEvents = Bacon.fromEvent(primus, 'data').filter(data => _.has(data, 'autopilotEnabled'))
 
