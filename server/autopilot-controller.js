@@ -35,7 +35,7 @@ function adjustCourse(adjustmentRads) {
   })
 }
 
-var state = Bacon.interval(300, false)
+var state = Bacon.interval(200, false)
   .merge(can.rxFrames.map(true))
   .slidingWindow(2)
   .map(values => ! _.every(values, value => value === false))
