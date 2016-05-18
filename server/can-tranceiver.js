@@ -1,5 +1,6 @@
 var can = require('socketcan')
 var Bacon = require('baconjs')
+var _ = require('lodash')
 
 module.exports = function(canDevice, rxFilters) {
   var channel = can.createRawChannel(canDevice)
@@ -10,6 +11,8 @@ module.exports = function(canDevice, rxFilters) {
     channel.addListener('onMessage', sink)
     return () => {}
   })
+  .map(frame => _.assign(frame, { pgn: extractPgn(frame) }))
+
   channel.start()
 
 
@@ -21,4 +24,9 @@ module.exports = function(canDevice, rxFilters) {
     send,
     rxFrames: rxFrames
   }
+}
+
+
+function extractPgn(frame) {
+  return (frame.id >> 8) & 0x1ffff
 }
