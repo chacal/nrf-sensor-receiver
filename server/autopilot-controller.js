@@ -42,7 +42,9 @@ function adjustCourse(adjustmentRads) {
 
 var magneticVariation = can.rxFrames
   .filter(f => f.pgn === MAGENTIC_VARIATION_PGN)
+  .map('.data')
   .map(parseMagneticVariation)
+  .skipDuplicates()
   .toProperty(undefined)
 
 var trackedCourseFrames = can.rxFrames

@@ -15,7 +15,11 @@ autopilotEvents.onValue(status => {
   $('#standby').prop('disabled', !status.autopilotEnabled)
   $('#adjustments button').prop('disabled', !status.autopilotEnabled)
   $('#auto').prop('disabled', status.autopilotEnabled)
-  $('#course').empty().html(status.course ? Math.round(util.radsToDeg(status.course)) : '')
+  $('#course').empty().html(calculateCourse())
+
+  function calculateCourse() {
+    return status.course && status.magneticVariation ? Math.round(util.radsToDeg(status.course + status.magneticVariation)) : ''
+  }
 })
 
 
