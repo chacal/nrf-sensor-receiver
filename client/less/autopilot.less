@@ -10,7 +10,7 @@ div.main-content {
   button { width: 100%; height: @cellHeight; margin: @cellMargin 0; font-size: 18px; padding-left: 0; padding-right: 0; }
   #course {
     height: @cellHeight; line-height: @cellHeight; margin: @cellMargin 0; font-size: 60px;
-    &:not(:empty)::after { content: "°"; position: absolute; }
+    &:not(:empty)::after { content: "°T"; position: absolute; font-size: 30px; line-height: 30px; }
     &:empty::after { content: "-"; }
   }
 }
