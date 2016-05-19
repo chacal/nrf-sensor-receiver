@@ -10,15 +10,16 @@ require('./less/autopilot.less')
 $('body').show(0)
 
 var autopilotEvents = Bacon.fromEvent(primus, 'data').filter(data => _.has(data, 'autopilotEnabled'))
+var magneticVariation = Bacon.fromPromise($.get('/signalk/v1/api/vessels/self/navigation/magneticVariation')).map('.value').toProperty(undefined)
 
-autopilotEvents.onValue(status => {
+Bacon.combineAsArray(autopilotEvents, magneticVariation).onValues((status, magneticVariation) => {
   $('#standby').prop('disabled', !status.autopilotEnabled)
   $('#adjustments button').prop('disabled', !status.autopilotEnabled)
   $('#auto').prop('disabled', status.autopilotEnabled)
   $('#course').empty().html(calculateCourse())
 
   function calculateCourse() {
-    return status.course && status.magneticVariation ? Math.round(util.radsToDeg(status.course + status.magneticVariation)) : ''
+    return status.course && magneticVariation ? Math.round(util.radsToDeg(status.course + magneticVariation)) : ''
   }
 })
 
