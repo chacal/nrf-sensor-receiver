@@ -1,9 +1,7 @@
 var PGN_65360_FILTER = { id: 0xff5000, mask: 0x1ffff00 }    // Tracked course (magnetic)
-var PGN_127258_FILTER = { id: 0x1f11a00, mask: 0x1ffff00 }   // Magnetic variation
 var TRACKED_COURSE_PGN = 65360
-var MAGENTIC_VARIATION_PGN = 127258
 
-var can = require('./can-tranceiver.js')('can0', [PGN_65360_FILTER, PGN_127258_FILTER])
+var can = require('./can-tranceiver.js')('can0', [PGN_65360_FILTER])
 var Bacon = require('baconjs')
 var _ = require('lodash')
 var util = require('./util.js')
@@ -40,15 +38,7 @@ function adjustCourse(adjustmentRads) {
   })
 }
 
-var magneticVariation = can.rxFrames
-  .filter(f => f.pgn === MAGENTIC_VARIATION_PGN)
-  .map('.data')
-  .map(parseMagneticVariation)
-  .skipDuplicates()
-  .toProperty(undefined)
-
-var trackedCourseFrames = can.rxFrames
-  .filter(f => f.pgn === TRACKED_COURSE_PGN)
+var trackedCourseFrames = can.rxFrames.filter(f => f.pgn === TRACKED_COURSE_PGN)
 
 var state = Bacon.interval(200, false)
   .merge(trackedCourseFrames.map(true))
@@ -62,10 +52,9 @@ var trackedCourse = trackedCourseFrames
   .skipDuplicates()
   .toProperty(undefined)
 
-var status = Bacon.combineWith(state, trackedCourse, magneticVariation, (autopilotEnabled, course, magneticVariation) => ({
+var status = Bacon.combineWith(state, trackedCourse, (autopilotEnabled, course) => ({
   autopilotEnabled,
-  course: autopilotEnabled ? course : undefined,
-  magneticVariation
+  course: autopilotEnabled ? course : undefined
 }))
 
 
@@ -73,9 +62,6 @@ function parseTrackedCourse(pgn65360Buffer) {
   return pgn65360Buffer.readUInt16LE(5) / 10000
 }
 
-function parseMagneticVariation(pgn127258Buffer) {
-  return pgn127258Buffer.readUInt16LE(4) / 10000
-}
 
 module.exports = {
   turnOn,
