@@ -1,6 +1,7 @@
 var nrf = require('nrf')
 var reverse = require('reverse-string')
 var Bacon = require('baconjs')
+var _ = require('lodash')
 
 var config = {
   spiDevice: process.env.NRF24_SPI_DEVICE ? process.env.NRF24_SPI_DEVICE : "/dev/spidev0.1",
