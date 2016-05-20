@@ -2,6 +2,7 @@ var CommonsChunkPlugin = new require("webpack/lib/optimize/CommonsChunkPlugin")
 
 module.exports = {
   entry: {
+    index: './client/index.js',
     sensors: './client/sensors.js',
     autopilot: './client/autopilot.js'
   },
