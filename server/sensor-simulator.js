@@ -11,7 +11,8 @@ function randomTemperature() {
     instance: _.random(1, 5),
     temperature: _.random(0, 28, true),
     vcc: _.random(3500, 4200),
-    previousSampleTimeMicros: _.random(2000, 25000)
+    previousSampleTimeMicros: _.random(2000, 25000),
+    ts: new Date()
   }
 }
 
@@ -21,7 +22,8 @@ function randomPressure() {
     instance: _.random(1, 5),
     pressure: _.random(960, 1028, true),
     vcc: _.random(3500, 4200),
-    previousSampleTimeMicros: _.random(2000, 25000)
+    previousSampleTimeMicros: _.random(2000, 25000),
+    ts: new Date()
   }
 }
 

@@ -27,7 +27,7 @@ function renderTemperature(temperature) {
   $row.find('td.temperature').html(temperature.temperature.toFixed(2) + '&deg;C')
   $row.find('td.vcc').html((temperature.vcc / 1000).toFixed(3) + 'V')
   $row.find('td.sampleTime').html(temperature.previousSampleTimeMicros + 'µs')
-  $row.find('td.time').html(moment().format('HH:mm:ss'))
+  $row.find('td.time').html(moment(temperature.ts).format('HH:mm:ss'))
 }
 
 function renderPressure(pressure) {
@@ -35,7 +35,7 @@ function renderPressure(pressure) {
   $row.find('td.pressure').html(pressure.pressure.toFixed(2) + 'mbar')
   $row.find('td.vcc').html((pressure.vcc / 1000).toFixed(3) + 'V')
   $row.find('td.sampleTime').html(pressure.previousSampleTimeMicros + 'µs')
-  $row.find('td.time').html(moment().format('HH:mm:ss'))
+  $row.find('td.time').html(moment(pressure.ts).format('HH:mm:ss'))
 }
 
 function temperatureRowTemplate(temperature) {

@@ -33,7 +33,7 @@ var sensorStream = Bacon.fromCallback(radio.begin)
 
 function dataReceived(buffer) {
   Array.prototype.reverse.call(buffer)        // RF24 on Arduino doesn't send data in LSB order -> reverse to match
-  var data = parseTagAndInstance(buffer)
+  var data = _.assign(parseTagAndInstance(buffer), { ts: new Date() })
 
   switch(data.tag) {
     case 't':
