@@ -7,6 +7,8 @@ var SIGNALK_SERVER = process.env.SIGNALK_SERVER_URL ? process.env.SIGNALK_SERVER
 var autopilot = process.platform === 'linux' ? require('./autopilot-controller.js') : require('./autopilot-simulator')
 var util = require('./util.js')
 var requestProxy = require('express-request-proxy')
+var Bacon = require('baconjs')
+var _ = require('lodash')
 
 var app = express()
 app.use(express.static(__dirname + '/../public'))
@@ -46,10 +48,14 @@ app.post('/autopilot/adjust-course', (req, res) => {
 
 
 function start() {
-  primus.on('connection', spark => {
-    autopilot.status.first().onValue(status => spark.write(status))
-  })
-  autopilot.status.onValue(status => primus.write(status))
+  var latestSensorValues = sensorStream.scan({}, (result, val) => { result[val.instance + val.tag] = val; return result }).map(_.values).toProperty()
+  var newWsClients = Bacon.fromEvent(primus, 'connection')
+
+  propertyOnNewConnection(latestSensorValues)
+    .onValues((latestValues, spark) => latestValues.forEach(v => spark.write(v)))
+
+  propertyOnNewConnection(autopilot.status)
+    .onValues((status, spark) => spark.write(status))
 
   sensorStream.onValue(value => {
     if(logToConsole) {
@@ -57,5 +63,9 @@ function start() {
     }
     primus.write(value)
   })
-  autopilot.status.log()
+  autopilot.status.onValue(value => primus.write(value))
+
+  function propertyOnNewConnection(property) {
+    return property.sampledBy(newWsClients, (propertyValue, newClient) => [propertyValue, newClient])
+  }
 }
