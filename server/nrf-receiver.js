@@ -28,7 +28,7 @@ var sensorStream = Bacon.fromCallback(radio.begin)
   .flatMapLatest(() => Bacon.fromCallback(radio.setStates, {EN_ACK_PAY:false, EN_DYN_ACK:false}))   // Disable ACK payloads & dynamic ack to get auto ACK function with PA+LNA module
   .flatMapLatest(() => {
     var rx = radio.openPipe('rx', new Buffer(reverse(config.rxAddress))) // RF24 on Arduino doesn't send data in LSB order -> reverse to match
-    return Bacon.fromEvent(rx, 'data').map(dataReceived)
+    return Bacon.fromEvent(rx, 'data').map(dataReceived).filter(_.identity)
       .merge(Bacon.fromEvent(rx, 'error', Bacon.Error))
   })
 
