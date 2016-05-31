@@ -5,10 +5,11 @@ var moment = require('moment')
 
 const temperatures = eventsWithTag('t')
 const pressures = eventsWithTag('p')
+const currents = eventsWithTag('c')
 
 bindRenderer(temperatures, $('#temperatures'), temperatureRowTemplate, renderTemperature)
 bindRenderer(pressures, $('#pressures'), pressureRowTemplate, renderPressure)
-
+bindRenderer(currents, $('#currents'), currentRowTemplate, renderCurrent)
 
 function eventsWithTag(tag) { return Bacon.fromEvent(primus, 'data').filter(data => data.tag === tag) }
 
@@ -38,6 +39,16 @@ function renderPressure(pressure) {
   $row.find('td.time').html(moment(pressure.ts).format('HH:mm:ss'))
 }
 
+function renderCurrent(current) {
+  var $row = $(`tr.current${current.instance}`)
+  $row.find('td.raw').html(current.rawMeasurement)
+  $row.find('td.shunt').html(current.shuntVoltageMilliVolts.toFixed(6) + 'mV')
+  $row.find('td.current').html(current.current.toFixed(3) + 'A')
+  $row.find('td.vcc').html((current.vcc / 1000).toFixed(3) + 'V')
+  $row.find('td.sampleTime').html(current.previousSampleTimeMicros + 'µs')
+  $row.find('td.time').html(moment(current.ts).format('HH:mm:ss'))
+}
+
 function temperatureRowTemplate(temperature) {
   return `<tr class="temperature${temperature.instance}">
             <td>Sensor ${temperature.instance}</td>
@@ -53,6 +64,19 @@ function pressureRowTemplate(pressure) {
   return `<tr class="pressure${pressure.instance}">
             <td>Sensor ${pressure.instance}</td>
             <td class="pressure"></td>
+            <td class="vcc"></td>
+            <td class="sampleTime"></td>
+            <td class="time"></td>
+          </tr>
+        `
+}
+
+function currentRowTemplate(current) {
+  return `<tr class="current${current.instance}">
+            <td>Sensor ${current.instance}</td>
+            <td class="raw"></td>
+            <td class="shunt"></td>
+            <td class="current"></td>
             <td class="vcc"></td>
             <td class="sampleTime"></td>
             <td class="time"></td>
