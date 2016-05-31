@@ -43,6 +43,9 @@ function dataReceived(buffer) {
     case 'p':
       fillPressureData(buffer, data)
       break;
+    case 'c':
+      fillCurrentData(buffer, data)
+      break;
     default:
       console.error("Received unknown data!", buffer)
       return
@@ -66,6 +69,14 @@ function fillPressureData(buffer, data) {
   data.pressure = buffer.readFloatLE(2)
   data.vcc = buffer.readInt16LE(6)
   data.previousSampleTimeMicros = buffer.readUInt32LE(8)
+}
+
+function fillCurrentData(buffer, data) {
+  data.rawMeasurement = buffer.readInt16LE(2)
+  data.shuntVoltageMilliVolts = buffer.readFloatLE(4)
+  data.current = buffer.readFloatLE(8)
+  data.vcc = buffer.readInt16LE(12)
+  data.previousSampleTimeMicros = buffer.readUInt32LE(14)
 }
 
 module.exports = sensorStream
