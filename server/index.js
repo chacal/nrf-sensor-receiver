@@ -9,6 +9,7 @@ var util = require('./util.js')
 var requestProxy = require('express-request-proxy')
 var Bacon = require('baconjs')
 var _ = require('lodash')
+var influxDbSender = require('./influxdb-sender')
 
 var app = express()
 app.use(express.static(__dirname + '/../public'))
@@ -64,6 +65,8 @@ function start() {
     primus.write(value)
   })
   autopilot.status.onValue(value => primus.write(value))
+
+  influxDbSender.start(sensorStream)
 
   function propertyOnNewConnection(property) {
     return property.sampledBy(newWsClients, (propertyValue, newClient) => [propertyValue, newClient])
