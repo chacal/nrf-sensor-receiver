@@ -46,6 +46,9 @@ function dataReceived(buffer) {
     case 'c':
       fillCurrentData(buffer, data)
       break;
+    case 'a':
+      fillAutopilotRemoteData(buffer, data)
+      break;
     default:
       console.error("Received unknown data!", buffer)
       return
@@ -77,6 +80,13 @@ function fillCurrentData(buffer, data) {
   data.current = buffer.readFloatLE(8)
   data.vcc = buffer.readInt16LE(12)
   data.previousSampleTimeMicros = buffer.readUInt32LE(14)
+}
+
+function fillAutopilotRemoteData(buffer, data) {
+  data.buttonId = buffer.readUInt8(1)
+  data.isLongPress = buffer.readUInt8(2) !== 0
+  data.vcc = buffer.readInt16LE(3)
+  data.previousSampleTimeMicros = buffer.readUInt32LE(5)
 }
 
 module.exports = sensorStream

@@ -19,6 +19,7 @@ var primus = new Primus(server)
 server.listen(8080, () => {
   console.log('Listening on http://localhost:8080')
   start()
+  startAutopilotRemoteReceiver()
 })
 
 app.use('/signalk/*', requestProxy({ url: `${SIGNALK_SERVER}/signalk/*` }))
@@ -71,4 +72,11 @@ function start() {
   function propertyOnNewConnection(property) {
     return property.sampledBy(newWsClients, (propertyValue, newClient) => [propertyValue, newClient])
   }
+}
+
+function startAutopilotRemoteReceiver() {
+  var autopilotEvents = sensorStream.filter(event => event.tag === 'a')
+
+  autopilotEvents.filter(e => e.buttonId === 1).onValue(autopilot.turnOn)
+  autopilotEvents.filter(e => e.buttonId === 2).onValue(autopilot.turnOff)
 }
