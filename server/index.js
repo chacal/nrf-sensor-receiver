@@ -79,4 +79,8 @@ function startAutopilotRemoteReceiver() {
 
   autopilotEvents.filter(e => e.buttonId === 1).onValue(autopilot.turnOn)
   autopilotEvents.filter(e => e.buttonId === 2).onValue(autopilot.turnOff)
+  autopilotEvents.filter(e => e.buttonId === 3).onValue(() => autopilot.adjustCourse(util.degToRads(10)))
+  autopilotEvents.filter(e => e.buttonId === 4).onValue(() => autopilot.adjustCourse(util.degToRads(1)))
+  autopilotEvents.filter(e => e.buttonId === 5).onValue(() => autopilot.adjustCourse(util.degToRads(-1)))
+  autopilotEvents.filter(e => e.buttonId === 6).onValue(() => autopilot.adjustCourse(util.degToRads(-10)))
 }
