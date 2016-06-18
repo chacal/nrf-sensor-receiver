@@ -49,6 +49,9 @@ function dataReceived(buffer) {
     case 'a':
       fillAutopilotRemoteData(buffer, data)
       break;
+    case 'w':
+      fillTankData(buffer, data)
+      break;
     default:
       console.error("Received unknown data!", buffer)
       return
@@ -85,6 +88,12 @@ function fillCurrentData(buffer, data) {
 function fillAutopilotRemoteData(buffer, data) {
   data.buttonId = buffer.readUInt8(1)
   data.isLongPress = buffer.readUInt8(2) !== 0
+  data.vcc = buffer.readInt16LE(3)
+  data.previousSampleTimeMicros = buffer.readUInt32LE(5)
+}
+
+function fillTankData(buffer, data) {
+  data.tankLevel = buffer.readUInt8(2)
   data.vcc = buffer.readInt16LE(3)
   data.previousSampleTimeMicros = buffer.readUInt32LE(5)
 }
