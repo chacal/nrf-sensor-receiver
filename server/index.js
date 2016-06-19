@@ -87,28 +87,9 @@ function startAutopilotRemoteReceiver() {
 }
 
 function createLiveViewSensorStream(sensorStream) {
-  var withoutCurrent = sensorStream.filter(event => event.tag !== 'c')
-  var averagedCurrents = averagedCurrents(sensorStream)
-  return withoutCurrent.merge(averagedCurrents)
-}
-
-function averagedCurrents(rawSensorStream) {
   var CURRENT_AVERAGING_SLIDING_WINDOW = 4
 
-  var slidingWindowCurrents = rawSensorStream.filter(data => data.tag === 'c')
-    .groupBy(value => value.instance)
-    .flatMap(streamByInstance => streamByInstance.slidingWindow(CURRENT_AVERAGING_SLIDING_WINDOW, 1).map(averageCurrentEvents))
-
-  return slidingWindowCurrents
-
-  function averageCurrentEvents(events) {
-    return _.assign(events[0], {
-      current: _.meanBy(events, 'current'),
-      vcc: _.meanBy(events, 'vcc'),
-      rawMeasurement: _.meanBy(events, 'rawMeasurement'),
-      shuntVoltageMilliVolts: _.meanBy(events, 'shuntVoltageMilliVolts'),
-      previousSampleTimeMicros: _.meanBy(events, 'previousSampleTimeMicros'),
-      ts: new Date()
-    })
-  }
+  var withoutCurrent = sensorStream.filter(event => event.tag !== 'c')
+  var currents = util.averagedCurrents(sensorStream, stream => stream.slidingWindow(CURRENT_AVERAGING_SLIDING_WINDOW, 1))
+  return withoutCurrent.merge(currents)
 }
