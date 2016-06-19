@@ -111,4 +111,5 @@ function createCumulativeCurrents(sensorStream) {
         ampHours: acc.ampHours + ampHoursDelta
       }
     }))
+    .filter('.tag')  // Filter away initial values
 }
