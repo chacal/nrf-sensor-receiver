@@ -1,7 +1,7 @@
 var Primus = require('primus')
 var express = require('express')
 var http = require('http')
-var sensorStream = process.platform === 'linux' ? require('./nrf-receiver.js') : require('./sensor-simulator.js')
+var rawSensorStream = process.platform === 'linux' ? require('./nrf-receiver.js') : require('./sensor-simulator.js')
 var logToConsole = process.env.LOG_TO_CONSOLE
 var SIGNALK_SERVER = process.env.SIGNALK_SERVER_URL ? process.env.SIGNALK_SERVER_URL : 'http://10.90.100.1'  // Defaults to Freya
 var autopilot = process.env.USE_AUTOPILOT_SIMULATOR ? require('./autopilot-simulator') : require('./autopilot-controller.js')
@@ -50,7 +50,8 @@ app.post('/autopilot/adjust-course', (req, res) => {
 
 
 function start() {
-  var latestSensorValues = sensorStream.scan({}, (result, val) => { result[val.instance + val.tag] = val; return result }).map(_.values).toProperty()
+  var liveViewSensorStream = createLiveViewSensorStream(rawSensorStream)
+  var latestSensorValues = liveViewSensorStream.scan({}, (result, val) => { result[val.instance + val.tag] = val; return result }).map(_.values).toProperty()
   var newWsClients = Bacon.fromEvent(primus, 'connection')
 
   propertyOnNewConnection(latestSensorValues)
@@ -59,7 +60,7 @@ function start() {
   propertyOnNewConnection(autopilot.status)
     .onValues((status, spark) => spark.write(status))
 
-  sensorStream.onValue(value => {
+  liveViewSensorStream.onValue(value => {
     if(logToConsole) {
       console.log(JSON.stringify(value))
     }
@@ -67,7 +68,7 @@ function start() {
   })
   autopilot.status.onValue(value => primus.write(value))
 
-  influxDbSender.start(sensorStream)
+  influxDbSender.start(rawSensorStream)
 
   function propertyOnNewConnection(property) {
     return property.sampledBy(newWsClients, (propertyValue, newClient) => [propertyValue, newClient])
@@ -75,7 +76,7 @@ function start() {
 }
 
 function startAutopilotRemoteReceiver() {
-  var autopilotEvents = sensorStream.filter(event => event.tag === 'a')
+  var autopilotEvents = rawSensorStream.filter(event => event.tag === 'a')
 
   autopilotEvents.filter(e => e.buttonId === 1).onValue(autopilot.turnOn)
   autopilotEvents.filter(e => e.buttonId === 2).onValue(autopilot.turnOff)
@@ -83,4 +84,26 @@ function startAutopilotRemoteReceiver() {
   autopilotEvents.filter(e => e.buttonId === 4).onValue(() => autopilot.adjustCourse(util.degToRads(1)))
   autopilotEvents.filter(e => e.buttonId === 5).onValue(() => autopilot.adjustCourse(util.degToRads(-1)))
   autopilotEvents.filter(e => e.buttonId === 6).onValue(() => autopilot.adjustCourse(util.degToRads(-10)))
+}
+
+function createLiveViewSensorStream(sensorStream) {
+  var CURRENT_AVERAGING_SLIDING_WINDOW = 4
+
+  var withoutCurrent = sensorStream.filter(event => event.tag !== 'c')
+  var slidingWindowCurrents = rawSensorStream.filter(data => data.tag === 'c')
+    .groupBy(value => value.instance)
+    .flatMap(streamByInstance => streamByInstance.slidingWindow(CURRENT_AVERAGING_SLIDING_WINDOW, 1).map(averageCurrentEvents))
+
+  return withoutCurrent.merge(slidingWindowCurrents)
+
+  function averageCurrentEvents(events) {
+    return _.assign(events[0], {
+      current: _.meanBy(events, 'current'),
+      vcc: _.meanBy(events, 'vcc'),
+      rawMeasurement: _.meanBy(events, 'rawMeasurement'),
+      shuntVoltageMilliVolts: _.meanBy(events, 'shuntVoltageMilliVolts'),
+      previousSampleTimeMicros: _.meanBy(events, 'previousSampleTimeMicros'),
+      ts: new Date()
+    })
+  }
 }
