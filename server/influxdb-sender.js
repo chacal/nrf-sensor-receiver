@@ -1,5 +1,6 @@
 var influx = require('influx')
 var _ = require('lodash')
+var util = require('./util.js')
 
 var client = influx({
   host : process.env.INFLUXDB_HOST ? process.env.INFLUXDB_HOST : 'influxdb.chacal.online',
@@ -9,8 +10,9 @@ var client = influx({
   database : process.env.INFLUXDB_DB
 })
 
-function start(sensorStream) {
-  sensorStream.onValue(event => {
+function start(rawSensorStream) {
+  var loggedSensorStream = createLoggedSensorStream(rawSensorStream)
+  loggedSensorStream.onValue(event => {
     const series = {
       sensorVoltage: eventPoint(event, e => ({ value: e.vcc / 1000 })),
       measurementDuration: eventPoint(event, e => ({ value: e.previousSampleTimeMicros / 1000 / 1000 }))
@@ -45,6 +47,12 @@ function eventPoint(event, valuesExtractor) {
   return [[_.assign({ time: event.ts }, valuesExtractor(event)), { instance: event.instance }]]
 }
 
+function createLoggedSensorStream(sensorStream) {
+  var CURRENT_AVERAGING_TIME = 5000
+  var withoutCurrent = sensorStream.filter(event => event.tag !== 'c')
+  var currents = util.averagedCurrents(sensorStream, stream => stream.bufferWithTime(CURRENT_AVERAGING_TIME))
+  return withoutCurrent.merge(currents)
+}
 
 module.exports = {
   start
