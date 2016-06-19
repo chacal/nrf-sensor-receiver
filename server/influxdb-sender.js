@@ -28,6 +28,12 @@ function start(rawSensorStream) {
           value: e.current
         }))
         break;
+      case 'w':
+        var series = sensorEventSeries(event)
+        series.tankLevel = eventPoint(event, e => ({
+          value: e.tankLevel
+        }))
+        break;
       case 'e':
         var series = {}
         series.ampHours = eventPoint(event, e => ({
