@@ -6,10 +6,12 @@ var moment = require('moment')
 const temperatures = eventsWithTag('t')
 const pressures = eventsWithTag('p')
 const currents = eventsWithTag('c')
+const ampHours = eventsWithTag('e')
 
 bindRenderer(temperatures, $('#temperatures'), temperatureRowTemplate, renderTemperature)
 bindRenderer(pressures, $('#pressures'), pressureRowTemplate, renderPressure)
 bindRenderer(currents, $('#currents'), currentRowTemplate, renderCurrent)
+ampHours.onValue(renderAmpHours)
 
 function eventsWithTag(tag) { return Bacon.fromEvent(primus, 'data').filter(data => data.tag === tag) }
 
@@ -49,6 +51,11 @@ function renderCurrent(current) {
   $row.find('td.time').html(moment(current.ts).format('HH:mm:ss'))
 }
 
+function renderAmpHours(ampHoursEvent) {
+  var $row = $(`tr.current${ampHoursEvent.instance}`)
+  $row.find('td.ampHours').html(ampHoursEvent.ampHours.toFixed(3) + 'Ah')
+}
+
 function temperatureRowTemplate(temperature) {
   return `<tr class="temperature${temperature.instance}">
             <td>Sensor ${temperature.instance}</td>
@@ -78,6 +85,7 @@ function currentRowTemplate(current) {
             <td class="shunt"></td>
             <td class="current"></td>
             <td class="vcc"></td>
+            <td class="ampHours"></td>
             <td class="sampleTime"></td>
             <td class="time"></td>
           </tr>
