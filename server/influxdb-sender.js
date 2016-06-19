@@ -13,23 +13,25 @@ var client = influx({
 function start(rawSensorStream) {
   var loggedSensorStream = createLoggedSensorStream(rawSensorStream)
   loggedSensorStream.onValue(event => {
-    const series = {
-      sensorVoltage: eventPoint(event, e => ({ value: e.vcc / 1000 })),
-      measurementDuration: eventPoint(event, e => ({ value: e.previousSampleTimeMicros / 1000 / 1000 }))
-    }
-
     switch (event.tag) {
       case 't':
+        var series = sensorEventSeries(event)
         series.temperature = eventPoint(event, e => ({ value: e.temperature }))
         break;
       case 'p':
+        var series = sensorEventSeries(event)
         series.pressure = eventPoint(event, e => ({ value: e.pressure }))
         break;
       case 'c':
+        var series = sensorEventSeries(event)
         series.current = eventPoint(event, e => ({
-          value: e.current,
-          shuntVoltage: e.shuntVoltageMilliVolts / 1000,
-          rawMeasurement: e.rawMeasurement
+          value: e.current
+        }))
+        break;
+      case 'e':
+        var series = {}
+        series.ampHours = eventPoint(event, e => ({
+          value: e.ampHours
         }))
         break;
     }
@@ -39,6 +41,13 @@ function start(rawSensorStream) {
         console.log(err)
       }
     })
+
+    function sensorEventSeries(event) {
+      return {
+        sensorVoltage: eventPoint(event, e => ({ value: e.vcc / 1000 })),
+        measurementDuration: eventPoint(event, e => ({ value: e.previousSampleTimeMicros / 1000 / 1000 }))
+      }
+    }
   })
 }
 
@@ -49,9 +58,15 @@ function eventPoint(event, valuesExtractor) {
 
 function createLoggedSensorStream(sensorStream) {
   var CURRENT_AVERAGING_TIME = 5000
-  var withoutCurrent = sensorStream.filter(event => event.tag !== 'c')
+
+  var withoutCurrentOrAmpHours = sensorStream.filter(event => event.tag !== 'c' && event.tag !== 'e')
   var currents = util.averagedCurrents(sensorStream, stream => stream.bufferWithTime(CURRENT_AVERAGING_TIME))
-  return withoutCurrent.merge(currents)
+  var throttledAmpHours = sensorStream
+    .filter(event => event.tag === 'e')
+    .groupBy(value => value.instance)
+    .flatMap(streamByInstance => streamByInstance.throttle(CURRENT_AVERAGING_TIME))
+
+  return withoutCurrentOrAmpHours.merge(currents).merge(throttledAmpHours)
 }
 
 module.exports = {

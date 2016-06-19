@@ -48,8 +48,9 @@ app.post('/autopilot/adjust-course', (req, res) => {
 })
 
 
-function start(sensorStream) {
-  var liveViewSensorStream = createLiveViewSensorStream(sensorStream)
+function start(originalSensorStream) {
+  var augmentedSensorStream = originalSensorStream.merge(createCumulativeCurrents(originalSensorStream))
+  var liveViewSensorStream = createLiveViewSensorStream(augmentedSensorStream)
   var latestSensorValues = liveViewSensorStream.scan({}, (result, val) => { result[val.instance + val.tag] = val; return result }).map(_.values).toProperty()
   var newWsClients = Bacon.fromEvent(primus, 'connection')
 
@@ -67,8 +68,8 @@ function start(sensorStream) {
   })
   autopilot.status.onValue(value => primus.write(value))
 
-  influxDbSender.start(sensorStream)
-  startAutopilotRemoteReceiver(sensorStream)
+  influxDbSender.start(augmentedSensorStream)
+  startAutopilotRemoteReceiver(originalSensorStream)
 
   function propertyOnNewConnection(property) {
     return property.sampledBy(newWsClients, (propertyValue, newClient) => [propertyValue, newClient])
@@ -92,4 +93,22 @@ function createLiveViewSensorStream(sensorStream) {
   var withoutCurrent = sensorStream.filter(event => event.tag !== 'c')
   var currents = util.averagedCurrents(sensorStream, stream => stream.slidingWindow(CURRENT_AVERAGING_SLIDING_WINDOW, 1))
   return withoutCurrent.merge(currents)
+}
+
+function createCumulativeCurrents(sensorStream) {
+  var initialValue = { ampHours: 0, ts: new Date() }
+
+  return sensorStream.filter(data => data.tag === 'c')
+    .groupBy(value => value.instance)
+    .flatMap(streamByInstance => streamByInstance.scan(initialValue, (acc, event) => {
+      var hoursSinceLastUpdate = (new Date() - acc.ts) / 1000 / 60 / 60
+      var ampHoursDelta = event.current * hoursSinceLastUpdate
+
+      return {
+        tag: 'e',
+        instance: event.instance,
+        ts: new Date(),
+        ampHours: acc.ampHours + ampHoursDelta
+      }
+    }))
 }
