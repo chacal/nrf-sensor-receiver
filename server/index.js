@@ -18,8 +18,7 @@ var primus = new Primus(server)
 
 server.listen(8080, () => {
   console.log('Listening on http://localhost:8080')
-  start()
-  startAutopilotRemoteReceiver()
+  start(rawSensorStream)
 })
 
 app.use('/signalk/*', requestProxy({ url: `${SIGNALK_SERVER}/signalk/*` }))
@@ -49,8 +48,8 @@ app.post('/autopilot/adjust-course', (req, res) => {
 })
 
 
-function start() {
-  var liveViewSensorStream = createLiveViewSensorStream(rawSensorStream)
+function start(sensorStream) {
+  var liveViewSensorStream = createLiveViewSensorStream(sensorStream)
   var latestSensorValues = liveViewSensorStream.scan({}, (result, val) => { result[val.instance + val.tag] = val; return result }).map(_.values).toProperty()
   var newWsClients = Bacon.fromEvent(primus, 'connection')
 
@@ -68,15 +67,16 @@ function start() {
   })
   autopilot.status.onValue(value => primus.write(value))
 
-  influxDbSender.start(rawSensorStream)
+  influxDbSender.start(sensorStream)
+  startAutopilotRemoteReceiver(sensorStream)
 
   function propertyOnNewConnection(property) {
     return property.sampledBy(newWsClients, (propertyValue, newClient) => [propertyValue, newClient])
   }
 }
 
-function startAutopilotRemoteReceiver() {
-  var autopilotEvents = rawSensorStream.filter(event => event.tag === 'a')
+function startAutopilotRemoteReceiver(sensorStream) {
+  var autopilotEvents = sensorStream.filter(event => event.tag === 'a')
 
   autopilotEvents.filter(e => e.buttonId === 1).onValue(autopilot.turnOn)
   autopilotEvents.filter(e => e.buttonId === 2).onValue(autopilot.turnOff)
