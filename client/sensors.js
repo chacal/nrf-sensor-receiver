@@ -7,10 +7,12 @@ const temperatures = eventsWithTag('t')
 const pressures = eventsWithTag('p')
 const currents = eventsWithTag('c')
 const ampHours = eventsWithTag('e')
+const tanks = eventsWithTag('w')
 
 bindRenderer(temperatures, $('#temperatures'), temperatureRowTemplate, renderTemperature)
 bindRenderer(pressures, $('#pressures'), pressureRowTemplate, renderPressure)
 bindRenderer(currents, $('#currents'), currentRowTemplate, renderCurrent)
+bindRenderer(tanks, $('#tanks'), tankRowTemplate, renderTankLevel)
 ampHours.onValue(renderAmpHours)
 
 function eventsWithTag(tag) { return Bacon.fromEvent(primus, 'data').filter(data => data.tag === tag) }
@@ -56,6 +58,14 @@ function renderAmpHours(ampHoursEvent) {
   $row.find('td.ampHours').html(ampHoursEvent.ampHours.toFixed(3) + 'Ah')
 }
 
+function renderTankLevel(tankLevel) {
+  var $row = $(`tr.tank${tankLevel.instance}`)
+  $row.find('td.level').html(tankLevel.tankLevel + '%')
+  $row.find('td.vcc').html((tankLevel.vcc / 1000).toFixed(3) + 'V')
+  $row.find('td.sampleTime').html(tankLevel.previousSampleTimeMicros + 'µs')
+  $row.find('td.time').html(moment(tankLevel.ts).format('HH:mm:ss'))
+}
+
 function temperatureRowTemplate(temperature) {
   return `<tr class="temperature${temperature.instance}">
             <td>Sensor ${temperature.instance}</td>
@@ -86,6 +96,17 @@ function currentRowTemplate(current) {
             <td class="current"></td>
             <td class="vcc"></td>
             <td class="ampHours"></td>
+            <td class="sampleTime"></td>
+            <td class="time"></td>
+          </tr>
+        `
+}
+
+function tankRowTemplate(tankLevel) {
+  return `<tr class="tank${tankLevel.instance}">
+            <td>Sensor ${tankLevel.instance}</td>
+            <td class="level"></td>
+            <td class="vcc"></td>
             <td class="sampleTime"></td>
             <td class="time"></td>
           </tr>
