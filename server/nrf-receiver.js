@@ -36,25 +36,30 @@ function dataReceived(buffer) {
   Array.prototype.reverse.call(buffer)        // RF24 on Arduino doesn't send data in LSB order -> reverse to match
   var data = _.assign(parseTagAndInstance(buffer), { ts: new Date() })
 
-  switch(data.tag) {
-    case 't':
-      fillTemperatureData(buffer, data)
-      break;
-    case 'p':
-      fillPressureData(buffer, data)
-      break;
-    case 'c':
-      fillCurrentData(buffer, data)
-      break;
-    case 'a':
-      fillAutopilotRemoteData(buffer, data)
-      break;
-    case 'w':
-      fillTankData(buffer, data)
-      break;
-    default:
-      console.error("Received unknown data!", buffer)
-      return
+  try {
+    switch(data.tag) {
+      case 't':
+        fillTemperatureData(buffer, data)
+        break;
+      case 'p':
+        fillPressureData(buffer, data)
+        break;
+      case 'c':
+        fillCurrentData(buffer, data)
+        break;
+      case 'a':
+        fillAutopilotRemoteData(buffer, data)
+        break;
+      case 'w':
+        fillTankData(buffer, data)
+        break;
+      default:
+        console.error("Received unknown data!", buffer)
+        return
+    }
+  } catch(err) {
+    console.error("Error while decoding received data! Data: ", buffer, "\nError:", err)
+    return
   }
 
   return data
