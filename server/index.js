@@ -10,6 +10,7 @@ var requestProxy = require('express-request-proxy')
 var Bacon = require('baconjs')
 var _ = require('lodash')
 var influxDbSender = require('./influxdb-sender')
+var fs = require('fs')
 
 var app = express()
 app.use(express.static(__dirname + '/../public'))
@@ -49,7 +50,9 @@ app.post('/autopilot/adjust-course', (req, res) => {
 
 
 function start(originalSensorStream) {
-  var augmentedSensorStream = originalSensorStream.merge(createCumulativeCurrents(originalSensorStream))
+  var cumulativeCurrents = createCumulativeCurrents(originalSensorStream)
+  cumulativeCurrents.sampledBy(Bacon.interval(10000)).onValue(saveCumulativeCurrentToFile)
+  var augmentedSensorStream = originalSensorStream.merge(cumulativeCurrents)
   var liveViewSensorStream = createLiveViewSensorStream(augmentedSensorStream)
   var latestSensorValues = liveViewSensorStream.scan({}, (result, val) => { result[val.instance + val.tag] = val; return result }).map(_.values).toProperty()
   var newWsClients = Bacon.fromEvent(primus, 'connection')
@@ -96,20 +99,36 @@ function createLiveViewSensorStream(sensorStream) {
 }
 
 function createCumulativeCurrents(sensorStream) {
-  var initialValue = { ampHours: 0, ts: new Date() }
-
   return sensorStream.filter(data => data.tag === 'c')
     .groupBy(value => value.instance)
-    .flatMap(streamByInstance => streamByInstance.scan(initialValue, (acc, event) => {
-      var hoursSinceLastUpdate = (new Date() - acc.ts) / 1000 / 60 / 60
-      var ampHoursDelta = event.current * hoursSinceLastUpdate
+    .flatMap(streamByInstance => streamByInstance.first()
+      .flatMapFirst(firstEvent => streamByInstance.scan(getInitialValue(firstEvent), (acc, event) => {
+        var hoursSinceLastUpdate = (new Date() - acc.ts) / 1000 / 60 / 60
+        var ampHoursDelta = event.current * hoursSinceLastUpdate
 
-      return {
-        tag: 'e',
-        instance: event.instance,
-        ts: new Date(),
-        ampHours: acc.ampHours + ampHoursDelta
-      }
-    }))
+        return {
+          tag: 'e',
+          instance: event.instance,
+          ts: new Date(),
+          ampHours: acc.ampHours + ampHoursDelta
+        }
+      }))
+    )
     .filter('.tag')  // Filter away initial values
+
+  function getInitialValue(event) {
+    try {
+      var savedState = JSON.parse(fs.readFileSync(getCumulativeCurrentStateFileName(event.instance), 'utf8'))
+      savedState.ts = new Date()  // Override saved date to avoid (mis)calculating current during the time the server was not running
+      return savedState
+    } catch(err) {
+      return { ampHours: 0, ts: new Date() }
+    }
+  }
 }
+
+function saveCumulativeCurrentToFile(state) {
+  fs.writeFile(getCumulativeCurrentStateFileName(state.instance), JSON.stringify(state))
+}
+
+function getCumulativeCurrentStateFileName(instance) { return `${__dirname}/../cumulativeCurrentsState_${instance}.json` }
