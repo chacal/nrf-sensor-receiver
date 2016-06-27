@@ -9,7 +9,7 @@ var config = {
   irqPin: 24,                    // GPIO_24
   channel: 76,                   // 76 is the default channel for RF24 Arduino library
   rxAddress: process.env.NRF24_RX_ADDRESS ? process.env.NRF24_RX_ADDRESS : "nrf01",
-  dataRate: '2Mbps',
+  dataRate: '250kbps',
   crcBytes: 2,
   txPower: 'PA_MAX'
 }
