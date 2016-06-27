@@ -91,10 +91,10 @@ function fillCurrentData(buffer, data) {
 }
 
 function fillAutopilotRemoteData(buffer, data) {
-  data.buttonId = buffer.readUInt8(1)
-  data.isLongPress = buffer.readUInt8(2) !== 0
-  data.vcc = buffer.readInt16LE(3)
-  data.previousSampleTimeMicros = buffer.readUInt32LE(5)
+  data.buttonId = buffer.readUInt8(2)
+  data.isLongPress = buffer.readUInt8(3) !== 0
+  data.vcc = buffer.readInt16LE(4)
+  data.previousSampleTimeMicros = buffer.readUInt32LE(6)
 }
 
 function fillTankData(buffer, data) {
