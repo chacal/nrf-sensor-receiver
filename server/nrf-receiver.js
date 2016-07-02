@@ -53,6 +53,9 @@ function dataReceived(buffer) {
       case 'w':
         fillTankData(buffer, data)
         break;
+      case 's':
+        fillRFMGatewayData(buffer, data)
+        break;
       default:
         console.error("Received unknown data!", buffer)
         return
@@ -100,6 +103,12 @@ function fillAutopilotRemoteData(buffer, data) {
 function fillTankData(buffer, data) {
   data.tankLevel = buffer.readUInt8(2)
   data.vcc = buffer.readInt16LE(3)
+  data.previousSampleTimeMicros = buffer.readUInt32LE(5)
+}
+
+function fillRFMGatewayData(buffer, data) {
+  data.rssi = buffer.readInt16LE(2)
+  data.ackSent = buffer.readUInt8(4) !== 0
   data.previousSampleTimeMicros = buffer.readUInt32LE(5)
 }
 
