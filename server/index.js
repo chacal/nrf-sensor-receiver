@@ -3,7 +3,7 @@ var express = require('express')
 var http = require('http')
 var rawSensorStream = process.platform === 'linux' ? require('./nrf-receiver.js') : require('./sensor-simulator.js')
 var logToConsole = process.env.LOG_TO_CONSOLE
-var SIGNALK_SERVER = process.env.SIGNALK_SERVER_URL ? process.env.SIGNALK_SERVER_URL : 'http://10.90.100.1'  // Defaults to Freya
+var SIGNALK_SERVER = process.env.SIGNALK_SERVER_URL ? process.env.SIGNALK_SERVER_URL : 'http://10.90.100.1:3000'  // Defaults to Freya
 var autopilot = process.env.USE_AUTOPILOT_SIMULATOR ? require('./autopilot-simulator') : require('./autopilot-controller.js')
 var util = require('./util.js')
 var requestProxy = require('express-request-proxy')
