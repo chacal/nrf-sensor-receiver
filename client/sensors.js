@@ -5,6 +5,7 @@ var moment = require('moment')
 
 const temperatures = eventsWithTag('t')
 const pressures = eventsWithTag('p')
+const humidities = eventsWithTag('h')
 const currents = eventsWithTag('c')
 const ampHours = eventsWithTag('e')
 const tanks = eventsWithTag('w')
@@ -12,6 +13,7 @@ const rfm69gws = eventsWithTag('s')
 
 bindRenderer(temperatures, $('#temperatures'), temperatureRowTemplate, renderTemperature)
 bindRenderer(pressures, $('#pressures'), pressureRowTemplate, renderPressure)
+bindRenderer(humidities, $('#humidities'), humidityRowTemplate, renderHumidity)
 bindRenderer(currents, $('#currents'), currentRowTemplate, renderCurrent)
 bindRenderer(tanks, $('#tanks'), tankRowTemplate, renderTankLevel)
 bindRenderer(rfm69gws, $('#rfm69gateways'), rfm69GwRowTemplate, renderRfm69Gw)
@@ -43,6 +45,14 @@ function renderPressure(pressure) {
   $row.find('td.vcc').html((pressure.vcc / 1000).toFixed(3) + 'V')
   $row.find('td.sampleTime').html(pressure.previousSampleTimeMicros + 'µs')
   $row.find('td.time').html(moment(pressure.ts).format('HH:mm:ss'))
+}
+
+function renderHumidity(humidity) {
+  var $row = $(`tr.humidity${humidity.instance}`)
+  $row.find('td.humidity').html(humidity.humidity.toFixed(2) + '%')
+  $row.find('td.vcc').html((humidity.vcc / 1000).toFixed(3) + 'V')
+  $row.find('td.sampleTime').html(humidity.previousSampleTimeMicros + 'µs')
+  $row.find('td.time').html(moment(humidity.ts).format('HH:mm:ss'))
 }
 
 function renderCurrent(current) {
@@ -91,6 +101,17 @@ function pressureRowTemplate(pressure) {
   return `<tr class="pressure${pressure.instance}">
             <td>Sensor ${pressure.instance}</td>
             <td class="pressure"></td>
+            <td class="vcc"></td>
+            <td class="sampleTime"></td>
+            <td class="time"></td>
+          </tr>
+        `
+}
+
+function humidityRowTemplate(humidity) {
+  return `<tr class="humidity${humidity.instance}">
+            <td>Sensor ${humidity.instance}</td>
+            <td class="humidity"></td>
             <td class="vcc"></td>
             <td class="sampleTime"></td>
             <td class="time"></td>

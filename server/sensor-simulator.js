@@ -2,7 +2,7 @@ var Bacon = require('baconjs')
 var _ = require('lodash')
 
 var simulatorStream = Bacon.interval(2000)
-  .map(() => _.sample([randomTemperature, randomPressure, randomCurrent, randomTankLevel, randomRFM69Gw])())
+  .map(() => _.sample([randomTemperature, randomPressure, randomCurrent, randomTankLevel, randomRFM69Gw, randomHumidity])())
 
 
 function randomTemperature() {
@@ -21,6 +21,17 @@ function randomPressure() {
     tag:  'p',
     instance: _.random(1, 5),
     pressure: _.random(960, 1028, true),
+    vcc: _.random(3500, 4200),
+    previousSampleTimeMicros: _.random(2000, 25000),
+    ts: new Date()
+  }
+}
+
+function randomHumidity() {
+  return {
+    tag:  'h',
+    instance: _.random(1, 8),
+    humidity: _.random(0, 100, true),
     vcc: _.random(3500, 4200),
     previousSampleTimeMicros: _.random(2000, 25000),
     ts: new Date()

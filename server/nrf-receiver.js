@@ -44,6 +44,9 @@ function dataReceived(buffer) {
       case 'p':
         fillPressureData(buffer, data)
         break;
+      case 'h':
+        fillHumidityData(buffer, data)
+        break;
       case 'c':
         fillCurrentData(buffer, data)
         break;
@@ -81,6 +84,12 @@ function fillTemperatureData(buffer, data) {
 
 function fillPressureData(buffer, data) {
   data.pressure = buffer.readFloatLE(2)
+  data.vcc = buffer.readInt16LE(6)
+  data.previousSampleTimeMicros = buffer.readUInt32LE(8)
+}
+
+function fillHumidityData(buffer, data) {
+  data.humidity = buffer.readFloatLE(2)
   data.vcc = buffer.readInt16LE(6)
   data.previousSampleTimeMicros = buffer.readUInt32LE(8)
 }

@@ -22,6 +22,10 @@ function start(rawSensorStream) {
         var series = sensorEventSeries(event)
         series.pressure = eventPoint(event, e => ({ value: e.pressure }))
         break;
+      case 'h':
+        var series = sensorEventSeries(event)
+        series.humidity = eventPoint(event, e => ({ value: e.humidity }))
+        break;
       case 'c':
         var series = sensorEventSeries(event)
         series.current = eventPoint(event, e => ({
