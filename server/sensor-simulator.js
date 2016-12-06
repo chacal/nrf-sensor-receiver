@@ -73,4 +73,7 @@ function randomRFM69Gw() {
   }
 }
 
-module.exports = simulatorStream
+module.exports = Bacon.once({
+  sensorStream: simulatorStream,
+  radioSender: undefined
+})

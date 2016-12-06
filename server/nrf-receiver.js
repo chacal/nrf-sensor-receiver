@@ -9,6 +9,7 @@ var config = {
   irqPin: 24,                    // GPIO_24
   channel: 76,                   // 76 is the default channel for RF24 Arduino library
   rxAddress: process.env.NRF24_RX_ADDRESS ? process.env.NRF24_RX_ADDRESS : "nrf01",
+  txAddress: process.env.NRF24_TX_ADDRESS ? process.env.NRF24_TX_ADDRESS : "nrf02",
   dataRate: '250kbps',
   crcBytes: 2,
   txPower: 'PA_MAX'
@@ -24,13 +25,22 @@ radio
   .crcBytes(config.crcBytes)
   .transmitPower(config.txPower)
 
-var sensorStream = Bacon.fromCallback(radio.begin)
-  .flatMapLatest(() => Bacon.fromCallback(radio.setStates, {EN_ACK_PAY:false, EN_DYN_ACK:false}))   // Disable ACK payloads & dynamic ack to get auto ACK function with PA+LNA module
-  .flatMapLatest(() => {
-    var rx = radio.openPipe('rx', new Buffer(reverse(config.rxAddress))) // RF24 on Arduino doesn't send data in LSB order -> reverse to match
-    return Bacon.fromEvent(rx, 'data').map(dataReceived).filter(_.identity)
-      .merge(Bacon.fromEvent(rx, 'error', Bacon.Error))
-  })
+var radioStarted = Bacon.fromCallback(radio.begin)
+
+function sensorStream() {
+  return Bacon.fromCallback(radio.setStates, {EN_ACK_PAY:false, EN_DYN_ACK:false}) // Disable ACK payloads & dynamic ack to get auto ACK function with PA+LNA module
+    .flatMapLatest(() => {
+      var rx = radio.openPipe('rx', new Buffer(reverse(config.rxAddress))) // RF24 on Arduino doesn't send data in LSB order -> reverse to match
+      return Bacon.fromEvent(rx, 'data').map(dataReceived).filter(_.identity)
+        .merge(Bacon.fromEvent(rx, 'error', Bacon.Error))
+    })
+}
+
+function radioSender() {
+  var tx = radio.openPipe('tx', new Buffer(reverse(config.txAddress)), {size: 20, autoAck:false})  // RF24 on Arduino doesn't send data in LSB order -> reverse to match
+  tx.on('error', e => console.log('Error while sending data', e))
+  return tx
+}
 
 function dataReceived(buffer) {
   Array.prototype.reverse.call(buffer)        // RF24 on Arduino doesn't send data in LSB order -> reverse to match
@@ -121,4 +131,7 @@ function fillRFMGatewayData(buffer, data) {
   data.previousSampleTimeMicros = buffer.readUInt32LE(5)
 }
 
-module.exports = sensorStream
+module.exports = radioStarted.map(() => ({
+  sensorStream: sensorStream(),
+  radioSender: radioSender()
+}))

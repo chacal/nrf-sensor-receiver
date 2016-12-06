@@ -1,7 +1,7 @@
 var Primus = require('primus')
 var express = require('express')
 var http = require('http')
-var rawSensorStream = process.platform === 'linux' ? require('./nrf-receiver.js') : require('./sensor-simulator.js')
+var nrf = process.platform === 'linux' ? require('./nrf-receiver.js') : require('./sensor-simulator.js')
 var logToConsole = process.env.LOG_TO_CONSOLE
 var SIGNALK_SERVER = process.env.SIGNALK_SERVER_URL ? process.env.SIGNALK_SERVER_URL : 'http://10.90.100.1:3000'  // Defaults to Freya
 var autopilot = process.env.USE_AUTOPILOT_SIMULATOR ? require('./autopilot-simulator') : require('./autopilot-controller.js')
@@ -19,7 +19,7 @@ var primus = new Primus(server)
 
 server.listen(8080, () => {
   console.log('Listening on http://localhost:8080')
-  start(rawSensorStream)
+  nrf.onValue(nrfData => start(nrfData.sensorStream, nrfData.radioSender))
 })
 
 app.use('/signalk/*', requestProxy({ url: `${SIGNALK_SERVER}/signalk/*` }))
@@ -49,7 +49,7 @@ app.post('/autopilot/adjust-course', (req, res) => {
 })
 
 
-function start(originalSensorStream) {
+function start(originalSensorStream, tx) {
   var cumulativeCurrents = createCumulativeCurrents(originalSensorStream)
   cumulativeCurrents.sampledBy(Bacon.interval(10000)).onValue(saveCumulativeCurrentToFile)
   var augmentedSensorStream = originalSensorStream.merge(cumulativeCurrents)
