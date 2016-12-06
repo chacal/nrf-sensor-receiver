@@ -19,25 +19,23 @@ console.log("Starting with configuration:\n", config)
 
 
 var radio = nrf.connect(config.spiDevice, config.cePin, config.irqPin)
-radio
-  .dataRate(config.dataRate)
-  .channel(config.channel)
-  .crcBytes(config.crcBytes)
-  .transmitPower(config.txPower)
-
-var radioStarted = Bacon.fromCallback(radio.begin)
+var radioStarted = Bacon.fromCallback(radio.reset)
+  .flatMapLatest(() => Bacon.fromCallback(radio.dataRate, config.dataRate))
+  .flatMapLatest(() => Bacon.fromCallback(radio.channel, config.channel))
+  .flatMapLatest(() => Bacon.fromCallback(radio.crcBytes, config.crcBytes))
+  .flatMapLatest(() => Bacon.fromCallback(radio.transmitPower, config.txPower))
+  .flatMapLatest(() => Bacon.fromCallback(radio.autoRetransmit, {count:10, delay:2000}))
+  .flatMapLatest(() => Bacon.fromCallback(radio.begin))
+  .flatMapLatest(() => Bacon.fromCallback(radio.setStates, {EN_ACK_PAY:false, EN_DYN_ACK:false}))  // Disable ACK payloads & dynamic ack to get auto ACK function with PA+LNA module
 
 function sensorStream() {
-  return Bacon.fromCallback(radio.setStates, {EN_ACK_PAY:false, EN_DYN_ACK:false}) // Disable ACK payloads & dynamic ack to get auto ACK function with PA+LNA module
-    .flatMapLatest(() => {
-      var rx = radio.openPipe('rx', new Buffer(reverse(config.rxAddress))) // RF24 on Arduino doesn't send data in LSB order -> reverse to match
-      return Bacon.fromEvent(rx, 'data').map(dataReceived).filter(_.identity)
-        .merge(Bacon.fromEvent(rx, 'error', Bacon.Error))
-    })
+  var rx = radio.openPipe('rx', new Buffer(reverse(config.rxAddress))) // RF24 on Arduino doesn't send data in LSB order -> reverse to match
+  return Bacon.fromEvent(rx, 'data').map(dataReceived).filter(_.identity)
+    .merge(Bacon.fromEvent(rx, 'error', Bacon.Error))
 }
 
 function radioSender() {
-  var tx = radio.openPipe('tx', new Buffer(reverse(config.txAddress)), {size: 20, autoAck:false})  // RF24 on Arduino doesn't send data in LSB order -> reverse to match
+  var tx = radio.openPipe('tx', new Buffer(reverse(config.txAddress)))  // RF24 on Arduino doesn't send data in LSB order -> reverse to match
   tx.on('error', e => console.log('Error while sending data', e))
   return tx
 }
