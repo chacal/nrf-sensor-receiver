@@ -73,6 +73,7 @@ function start(originalSensorStream, tx) {
 
   influxDbSender.start(augmentedSensorStream)
   startAutopilotRemoteReceiver(originalSensorStream)
+  bindGetSensorEndpoint(latestSensorValues)
 
   function propertyOnNewConnection(property) {
     return property.sampledBy(newWsClients, (propertyValue, newClient) => [propertyValue, newClient])
@@ -88,6 +89,18 @@ function startAutopilotRemoteReceiver(sensorStream) {
   autopilotEvents.filter(e => e.buttonId === 4).onValue(() => autopilot.adjustCourse(util.degToRads(1)))
   autopilotEvents.filter(e => e.buttonId === 5).onValue(() => autopilot.adjustCourse(util.degToRads(-1)))
   autopilotEvents.filter(e => e.buttonId === 6).onValue(() => autopilot.adjustCourse(util.degToRads(-10)))
+}
+
+function bindGetSensorEndpoint(latestSensorValues) {
+  app.get('/sensor/:instance/:tag', (req, res) => {
+    latestSensorValues.sampledBy(Bacon.once()).onValue(currentSensorValues => {
+      var sensor = _.find(currentSensorValues, v => v.instance.toString() === req.params.instance && v.tag === req.params.tag)
+      if(sensor)
+        res.json(sensor).end()
+      else
+        res.status(404).end()
+    })
+  })
 }
 
 function createLiveViewSensorStream(sensorStream) {
